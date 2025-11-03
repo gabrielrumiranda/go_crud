@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crud_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-crud_postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - crud_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-crud_example}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crud_api
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-crud_example}?sslmode=disable
+      PORT: ${API_PORT:-5001}
+      GIN_MODE: ${GIN_MODE:-release}
+    ports:
+      - "${API_PORT:-5001}:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - crud_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+networks:
+  crud_network:
+    driver: bridge

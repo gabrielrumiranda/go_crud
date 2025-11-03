@@ -1,0 +1,10 @@
+.env.example
+.git
+.gitignore
+*.md
+README.md
+docker-compose.yml
+.vscode
+.idea
+tmp/
+*.log
