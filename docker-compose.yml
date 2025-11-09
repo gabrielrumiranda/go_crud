@@ -19,9 +19,7 @@ services:
       timeout: 5s
       retries: 5
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: gabrielrumiranda/go_crud
     container_name: crud_api
     environment:
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-crud_example}?sslmode=disable
